@@ -1,17 +1,16 @@
-version: "3.8"
+version: "2.4"
 
 services:
     app:
         build: .
         container_name: app.rms
-        depends_on: 
-          - db
-          - migrations
         environment:
           - PORT=8080
           - DATABASE_URL=postgres://testuser:1234@db.rms:5432/project6?sslmode=disable
         ports:
-          - "8080:8000"
+          - "8080:8080"
+        depends_on: 
+          - migrations
 
     migrations:
         build:
@@ -19,10 +18,10 @@ services:
             dockerfile: Dockerfile.migrations
         container_name: app.rms.migrations
         environment:
-          - PORT=8080
+          - PORT=8081
           - DATABASE_URL=postgres://testuser:1234@db.rms:5432/project6?sslmode=disable
-        command:
-          - /app/create_db.sh
+        ports:
+          - "8081:8081"
         depends_on: 
           - db
         volumes:
@@ -31,6 +30,7 @@ services:
     db:
         image: "postgres:13"
         container_name: db.rms
+        command: postgres -c 'max_connections=1024'
         ports:
           - "5432:5432"
         environment:

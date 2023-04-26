@@ -1,13 +1,13 @@
-FROM debian:buster-slim
-
+FROM rust as builder
+COPY . /app
 WORKDIR /app
+ENV SQLX_OFFLINE true
+RUN cargo build --release
 
-#Install curl
-RUN ["apt-get", "update"];
-RUN ["apt-get", "--yes", "--force-yes", "install", "curl"];
 
-# Install DB Migration tool.
-RUN ["curl", "-fsSL", "-o", "/usr/local/bin/migrate", "https://github.com/amacneil/dbmate/releases/download/v1.6.0/dbmate-linux-amd64"]
-RUN ["chmod", "+x", "/usr/local/bin/migrate"]
-
-COPY create_db.sh /app/create_db.sh
+FROM gcr.io/distroless/cc
+COPY --from=builder /app/target/release/migrate /app/migrate
+WORKDIR /app
+ENV SQLX_OFFLINE true
+EXPOSE 8081
+CMD ["./migrate"]
