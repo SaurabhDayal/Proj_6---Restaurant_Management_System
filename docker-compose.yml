@@ -1,44 +1,46 @@
 version: "3.8"
+
 services:
-  db:
-    image: "postgres:13"
-    ports:
-      - "5432:5432"
-    volumes:
-      - ./pgdata:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_USER=testuser
-      - POSTGRES_PASSWORD=1234
-      - POSTGRES_DB=project6
+    app:
+        build: .
+        container_name: app.rms
+        depends_on: 
+          - db
+          - migrations
+        environment:
+          - PORT=8080
+          - DATABASE_URL=postgres://testuser:1234@db.rms:5432/project6?sslmode=disable
+        ports:
+          - "8080:8000"
 
-# version: '3.8'
-# services:
-#     web:
-#         build: .
-#         ports:
-#             - "8080:8000"
-#         env_file:
-#             - .env
-#         command: ["/app/rust-actix-realworld-app"]
+    migrations:
+        build:
+            context: .
+            dockerfile: Dockerfile.migrations
+        container_name: app.rms.migrations
+        environment:
+          - PORT=8080
+          - DATABASE_URL=postgres://testuser:1234@db.rms:5432/project6?sslmode=disable
+        command:
+          - /app/create_db.sh
+        depends_on: 
+          - db
+        volumes:
+          - ./pgdata:/var/lib/postgresql/data
 
-#     migrations:
-#         build:
-#             context: .
-#             dockerfile: Dockerfile.migrations
-#         depends_on:
-#             - database
-#         env_file:
-#             - .env.prod
-#         command: ["./wait-for-postgres.sh"]
+    db:
+        image: "postgres:13"
+        container_name: db.rms
+        ports:
+          - "5432:5432"
+        environment:
+          - POSTGRES_USER=testuser
+          - POSTGRES_PASSWORD=1234
+          - POSTGRES_DB=project6
+        volumes:
+          - ./pgdata:/var/lib/postgresql/data
 
-#     database:
-#         image: postgres
-#         environment:
-#             - POSTGRES_USER=postgres
-#             - POSTGRES_PASSWORD=postgres
-#             - POSTGRES_DB=actix_realworld
-#         volumes:
-#             - ar-pgdata:/var/lib/postgresql/data
 
-# volumes:
-#     ar-pgdata:
+networks:
+  default:
+    name: rms-stack

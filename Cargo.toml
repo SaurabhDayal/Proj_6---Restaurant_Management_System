@@ -6,7 +6,7 @@ default-run = "rms"
 
 [dependencies]
 rand = "0.8.4"
-sqlx = { version = "0.5.1", features = ["runtime-actix-rustls", "postgres"]}
+sqlx = { version = "0.5.1", default-features = false, features = ["runtime-actix-rustls", "macros", "postgres","uuid", "migrate", "offline"]}
 pwhash = "1"
 derive_more = "0.99.0"
 dotenv = "0.15.0"

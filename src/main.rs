@@ -32,7 +32,9 @@ async fn main() -> std::io::Result<()> {
             .await
             .expect("Error building a connection pool")}
     );
+
     HttpServer::new(move || {
+
         App::new()
             .app_data(pool.clone())
             .service(register)
